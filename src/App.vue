@@ -1,54 +1,89 @@
 <script setup lang="ts">
-import { ref } from 'vue'
+import { ref, computed } from 'vue'
 
-const ds = ref(0)
-const tp = ref(0)
-const ex = ref(0)
+const poids = ref('')
+const taille = ref('')
 
-const moyenne = ref<number | null>(null)
-const mention = ref('')
+const moyenne = computed(() => {
+  const kg = Number(poids.value)
+  const metres = Number(taille.value) / 100
 
-function calculerMoyenne() {
-  moyenne.value = (ds.value + tp.value + ex.value) / 3
-
-  if (moyenne.value >= 16) {
-    mention.value = 'Très Bien'
-  } else if (moyenne.value >= 14) {
-    mention.value = 'Bien'
-  } else if (moyenne.value >= 12) {
-    mention.value = 'Assez Bien'
-  } else if (moyenne.value >= 10) {
-    mention.value = 'Passable'
-  } else {
-    mention.value = 'Insuffisant'
+  if (kg <= 0 || metres <= 0) {
+    return null
   }
+
+  return kg / (metres * metres)
+})
+
+const categorie = computed(() => {
+  if (moyenne.value === null) {
+    return ''
+  }
+
+  if (moyenne.value < 18.5) {
+    return 'Insuffisance pondérale'
+  } else if (moyenne.value < 25) {
+    return 'Corpulence normale'
+  } else if (moyenne.value < 30) {
+    return 'Surpoids'
+  } else {
+    return 'Obésité'
+  }
+})
+
+function effacer() {
+  poids.value = ''
+  taille.value = ''
 }
 </script>
 
 <template>
   <div class="page">
     <div class="card">
-      <h1>Calcul de Moyenne</h1>
-      <p>Entrez les notes de la matière</p>
+      <div class="icon">⚖️</div>
+
+      <h1>Calculateur d'IMC</h1>
+      <p class="description">
+        Entrez votre poids et votre taille
+      </p>
 
       <div class="form">
-        <label>DS</label>
-        <input v-model.number="ds" type="number" min="0" max="20">
+        <label>
+          Poids (kg)
+          <input
+            v-model="poids"
+            type="number"
+            min="1"
+            placeholder="Ex : 70"
+          />
+        </label>
 
-        <label>TP</label>
-        <input v-model.number="tp" type="number" min="0" max="20">
-
-        <label>EX</label>
-        <input v-model.number="ex" type="number" min="0" max="20">
+        <label>
+          Taille (cm)
+          <input
+            v-model="taille"
+            type="number"
+            min="50"
+            placeholder="Ex : 175"
+          />
+        </label>
       </div>
 
-      <button @click="calculerMoyenne">
-        Calculer
+      <button class="reset" @click="effacer">
+        🔄 Effacer
       </button>
 
       <div v-if="moyenne !== null" class="result">
-        <h2>Moyenne : {{ moyenne.toFixed(2) }}/20</h2>
-        <p>Mention : <strong>{{ mention }}</strong></p>
+        <h2>Votre IMC</h2>
+
+        <div class="number">
+          {{ moyenne.toFixed(1) }}
+        </div>
+
+        <p>
+          Catégorie :
+          <strong>{{ categorie }}</strong>
+        </p>
       </div>
     </div>
   </div>
@@ -66,64 +101,65 @@ function calculerMoyenne() {
 
 .card {
   background: white;
-  padding: 35px;
+  padding: 40px;
   border-radius: 20px;
-  width: 350px;
   text-align: center;
   box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
+  width: 350px;
+}
+
+.icon {
+  font-size: 40px;
 }
 
 h1 {
   color: #333;
 }
 
-.card > p {
+.description {
   color: #777;
 }
 
 .form {
-  display: flex;
-  flex-direction: column;
   text-align: left;
   margin: 25px 0;
 }
 
 label {
-  margin-top: 10px;
-  margin-bottom: 5px;
+  display: block;
+  margin-bottom: 15px;
   font-weight: bold;
 }
 
 input {
+  width: 100%;
+  box-sizing: border-box;
   padding: 10px;
+  margin-top: 6px;
   border: 1px solid #ccc;
   border-radius: 8px;
-  font-size: 16px;
 }
 
-button {
-  padding: 12px 25px;
+.reset {
+  padding: 10px 25px;
   border: none;
   border-radius: 8px;
   background: #667eea;
   color: white;
-  font-size: 16px;
   cursor: pointer;
-}
-
-button:hover {
-  background: #5568d9;
 }
 
 .result {
   margin-top: 25px;
-  padding: 15px;
+  padding: 20px;
   background: #f2f4ff;
   border-radius: 10px;
 }
 
-.result h2 {
-  color: #333;
+.number {
+  font-size: 45px;
+  font-weight: bold;
+  color: #667eea;
 }
 
 .result strong {
