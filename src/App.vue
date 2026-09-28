@@ -1,65 +1,55 @@
 <script setup lang="ts">
 import { ref } from 'vue'
 
-const compteur = ref(0)
-const scoreSauvegarde = ref<number | null>(null)
+const ds = ref(0)
+const tp = ref(0)
+const ex = ref(0)
 
-function augmenter() {
-  compteur.value++
-}
+const moyenne = ref<number | null>(null)
+const mention = ref('')
 
-function diminuer() {
-  compteur.value--
-}
+function calculerMoyenne() {
+  moyenne.value = (ds.value + tp.value + ex.value) / 3
 
-function reinitialiser() {
-  compteur.value = 0
-}
-
-function sauvegarderScore() {
-  scoreSauvegarde.value = compteur.value
+  if (moyenne.value >= 16) {
+    mention.value = 'Très Bien'
+  } else if (moyenne.value >= 14) {
+    mention.value = 'Bien'
+  } else if (moyenne.value >= 12) {
+    mention.value = 'Assez Bien'
+  } else if (moyenne.value >= 10) {
+    mention.value = 'Passable'
+  } else {
+    mention.value = 'Insuffisant'
+  }
 }
 </script>
 
 <template>
   <div class="page">
     <div class="card">
-      <div class="icon">🔢</div>
+      <h1>Calcul de Moyenne</h1>
+      <p>Entrez les notes de la matière</p>
 
-      <h1>Mon Compteur</h1>
-      <p class="description">Un compteur réalisé avec Vue.js</p>
+      <div class="form">
+        <label>DS</label>
+        <input v-model.number="ds" type="number" min="0" max="20">
 
-      <div class="counter">
-        <button class="btn minus" @click="diminuer">
-          −
-        </button>
+        <label>TP</label>
+        <input v-model.number="tp" type="number" min="0" max="20">
 
-        <div class="number">
-          {{ compteur }}
-        </div>
-
-        <button class="btn plus" @click="augmenter">
-          +
-        </button>
+        <label>EX</label>
+        <input v-model.number="ex" type="number" min="0" max="20">
       </div>
 
-      <div class="actions">
-        <button class="reset" @click="reinitialiser">
-          🔄 Réinitialiser
-        </button>
+      <button @click="calculerMoyenne">
+        Calculer
+      </button>
 
-        <button class="save" @click="sauvegarderScore">
-          💾 Sauvegarder mon score
-        </button>
+      <div v-if="moyenne !== null" class="result">
+        <h2>Moyenne : {{ moyenne.toFixed(2) }}/20</h2>
+        <p>Mention : <strong>{{ mention }}</strong></p>
       </div>
-
-      <p class="message">
-        Valeur actuelle : <strong>{{ compteur }}</strong>
-      </p>
-
-      <p v-if="scoreSauvegarde !== null" class="saved">
-        ⭐ Score sauvegardé : <strong>{{ scoreSauvegarde }}</strong>
-      </p>
     </div>
   </div>
 </template>
@@ -76,108 +66,67 @@ function sauvegarderScore() {
 
 .card {
   background: white;
-  padding: 45px;
-  border-radius: 25px;
+  padding: 35px;
+  border-radius: 20px;
+  width: 350px;
   text-align: center;
-  box-shadow: 0 15px 35px rgba(0, 0, 0, 0.25);
-  min-width: 350px;
-}
-
-.icon {
-  font-size: 45px;
-  margin-bottom: 10px;
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
 }
 
 h1 {
-  margin: 0;
   color: #333;
-  font-size: 32px;
 }
 
-.description {
+.card > p {
   color: #777;
-  margin-bottom: 35px;
 }
 
-.counter {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  gap: 25px;
-}
-
-.number {
-  min-width: 80px;
-  font-size: 55px;
-  font-weight: bold;
-  color: #333;
-}
-
-.btn {
-  width: 60px;
-  height: 60px;
-  border: none;
-  border-radius: 50%;
-  font-size: 32px;
-  color: white;
-  cursor: pointer;
-  transition: 0.2s;
-}
-
-.minus {
-  background: #e74c3c;
-}
-
-.plus {
-  background: #2ecc71;
-}
-
-.btn:hover {
-  transform: scale(1.12);
-}
-
-.actions {
+.form {
   display: flex;
   flex-direction: column;
-  gap: 12px;
-  margin-top: 30px;
+  text-align: left;
+  margin: 25px 0;
 }
 
-.reset,
-.save {
-  padding: 12px 20px;
+label {
+  margin-top: 10px;
+  margin-bottom: 5px;
+  font-weight: bold;
+}
+
+input {
+  padding: 10px;
+  border: 1px solid #ccc;
+  border-radius: 8px;
+  font-size: 16px;
+}
+
+button {
+  padding: 12px 25px;
   border: none;
-  border-radius: 10px;
+  border-radius: 8px;
+  background: #667eea;
   color: white;
-  font-size: 15px;
+  font-size: 16px;
   cursor: pointer;
-  transition: 0.2s;
 }
 
-.reset {
-  background: #f39c12;
+button:hover {
+  background: #5568d9;
 }
 
-.save {
-  background: #3498db;
+.result {
+  margin-top: 25px;
+  padding: 15px;
+  background: #f2f4ff;
+  border-radius: 10px;
 }
 
-.reset:hover,
-.save:hover {
-  transform: scale(1.03);
+.result h2 {
+  color: #333;
 }
 
-.message {
-  margin-top: 30px;
-  color: #666;
-}
-
-.message strong {
+.result strong {
   color: #667eea;
-}
-
-.saved {
-  color: #27ae60;
-  margin-top: 15px;
 }
 </style>
