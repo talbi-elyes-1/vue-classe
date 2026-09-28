@@ -1,90 +1,84 @@
 <script setup lang="ts">
 import { ref, computed } from 'vue'
 
-const poids = ref('')
-const taille = ref('')
+const nouvelleTache = ref('')
 
-const moyenne = computed(() => {
-  const kg = Number(poids.value)
-  const metres = Number(taille.value) / 100
+const taches = ref([
+  { id: 1, texte: 'Réviser Vue', terminee: false },
+  { id: 2, texte: 'Préparer le TP', terminee: false }
+])
 
-  if (kg <= 0 || metres <= 0) {
-    return null
-  }
-
-  return kg / (metres * metres)
+const tachesRestantes = computed(() => {
+  return taches.value.filter(tache => !tache.terminee).length
 })
 
-const categorie = computed(() => {
-  if (moyenne.value === null) {
-    return ''
+function ajouterTache() {
+  if (nouvelleTache.value.trim() === '') {
+    return
   }
 
-  if (moyenne.value < 18.5) {
-    return 'Insuffisance pondérale'
-  } else if (moyenne.value < 25) {
-    return 'Corpulence normale'
-  } else if (moyenne.value < 30) {
-    return 'Surpoids'
-  } else {
-    return 'Obésité'
-  }
-})
+  taches.value.push({
+    id: Date.now(),
+    texte: nouvelleTache.value,
+    terminee: false
+  })
 
-function effacer() {
-  poids.value = ''
-  taille.value = ''
+  nouvelleTache.value = ''
+}
+
+function supprimerTache(id: number) {
+  taches.value = taches.value.filter(tache => tache.id !== id)
 }
 </script>
 
 <template>
   <div class="page">
     <div class="card">
-      <div class="icon">⚖️</div>
+      <h1>📝 Ma liste de tâches</h1>
 
-      <h1>Calculateur d'IMC</h1>
-      <p class="description">
-        Entrez votre poids et votre taille
+      <form @submit.prevent="ajouterTache" class="form">
+        <input
+          v-model="nouvelleTache"
+          type="text"
+          placeholder="Ajouter une tâche..."
+        />
+
+        <button type="submit">
+          Ajouter
+        </button>
+      </form>
+
+      <p class="counter">
+        {{ tachesRestantes }} tâche(s) restante(s)
       </p>
 
-      <div class="form">
-        <label>
-          Poids (kg)
-          <input
-            v-model="poids"
-            type="number"
-            min="1"
-            placeholder="Ex : 70"
-          />
-        </label>
-
-        <label>
-          Taille (cm)
-          <input
-            v-model="taille"
-            type="number"
-            min="50"
-            placeholder="Ex : 175"
-          />
-        </label>
+      <div v-if="taches.length === 0" class="empty">
+        Aucune tâche pour le moment.
       </div>
 
-      <button class="reset" @click="effacer">
-        🔄 Effacer
-      </button>
+      <ul v-else class="task-list">
+        <li
+          v-for="tache in taches"
+          :key="tache.id"
+          :class="{ terminee: tache.terminee }"
+        >
+          <label>
+            <input
+              v-model="tache.terminee"
+              type="checkbox"
+            />
 
-      <div v-if="moyenne !== null" class="result">
-        <h2>Votre IMC</h2>
+            <span>{{ tache.texte }}</span>
+          </label>
 
-        <div class="number">
-          {{ moyenne.toFixed(1) }}
-        </div>
-
-        <p>
-          Catégorie :
-          <strong>{{ categorie }}</strong>
-        </p>
-      </div>
+          <button
+            class="delete"
+            @click="supprimerTache(tache.id)"
+          >
+            Supprimer
+          </button>
+        </li>
+      </ul>
     </div>
   </div>
 </template>
@@ -101,47 +95,38 @@ function effacer() {
 
 .card {
   background: white;
-  padding: 40px;
+  width: 500px;
+  padding: 35px;
   border-radius: 20px;
-  text-align: center;
   box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
-  width: 350px;
-}
-
-.icon {
-  font-size: 40px;
 }
 
 h1 {
+  text-align: center;
   color: #333;
 }
 
-.description {
-  color: #777;
-}
-
 .form {
-  text-align: left;
+  display: flex;
+  gap: 10px;
   margin: 25px 0;
 }
 
-label {
-  display: block;
-  margin-bottom: 15px;
-  font-weight: bold;
-}
-
-input {
-  width: 100%;
-  box-sizing: border-box;
-  padding: 10px;
-  margin-top: 6px;
+.form input {
+  flex: 1;
+  padding: 12px;
   border: 1px solid #ccc;
   border-radius: 8px;
+  color: #333;
+  background: white;
 }
 
-.reset {
-  padding: 10px 25px;
+.form input::placeholder {
+  color: #888;
+}
+
+.form button {
+  padding: 12px 20px;
   border: none;
   border-radius: 8px;
   background: #667eea;
@@ -149,20 +134,61 @@ input {
   cursor: pointer;
 }
 
-.result {
-  margin-top: 25px;
-  padding: 20px;
-  background: #f2f4ff;
-  border-radius: 10px;
-}
-
-.number {
-  font-size: 45px;
+.counter {
+  text-align: center;
+  color: #667eea;
   font-weight: bold;
-  color: #667eea;
 }
 
-.result strong {
-  color: #667eea;
+.task-list {
+  list-style: none;
+  padding: 0;
+}
+
+.task-list li {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 12px;
+  margin-top: 10px;
+  background: #f4f5ff;
+  border-radius: 8px;
+  color: #333;
+}
+
+.task-list li label {
+  display: flex;
+  gap: 10px;
+  align-items: center;
+  color: #333;
+}
+
+.task-list li span {
+  color: #333;
+}
+
+.terminee span {
+  text-decoration: line-through;
+  color: #888;
+}
+
+.delete {
+  border: none;
+  background: #e74c3c;
+  color: white;
+  padding: 7px 12px;
+  border-radius: 6px;
+  cursor: pointer;
+}
+
+.form button:hover,
+.delete:hover {
+  opacity: 0.85;
+}
+
+.empty {
+  text-align: center;
+  color: #888;
+  margin-top: 25px;
 }
 </style>
